@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Welcome to the Task Manager</h1>
+
+{% if tasks %}
+    <h2>Your Tasks:</h2>
+    {% for task in tasks %}
+        <div class="task {% if task.completed %}completed{% endif %}">
+            <h3>{{ task.title }}</h3>
+            <p>{{ task.description }}</p>
+            <p>Category: {{ task.category }}</p>
+            <p>Due Date: {{ task.due_date }}</p>
+            <a href="/edit_task/{{ task.id }}" class="btn">Edit</a>
+            
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No tasks found.</p>
+{% endif %}
+
+{% endblock %}
