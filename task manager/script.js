@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const taskList = document.getElementById('taskList');
     
+    // Load tasks from local storage on page load
+    loadTasks();
+
     // Add task button click event
     document.querySelector('#addTaskBtn').addEventListener('click', function () {
         addTask();
@@ -22,6 +25,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
             </select>
+            <select class="task-category">
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+                <option value="shopping">Shopping</option>
+                <option value="others">Others</option>
+            </select>
             <button class="complete-btn">Complete</button>
             <button class="edit-btn">Edit</button>
             <button class="delete-btn">Delete</button>
@@ -29,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
 
         taskList.appendChild(taskItem);
-
+        saveTasksToLocalStorage(); // Save tasks to local storage
         // Add event listeners for task completion, editing, and deletion
         const completeBtn = taskItem.querySelector('.complete-btn');
         const editBtn = taskItem.querySelector('.edit-btn');
@@ -37,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         completeBtn.addEventListener('click', function () {
             markTaskAsComplete(taskItem);
+            saveTasksToLocalStorage(); // Save tasks to local storage after marking as complete
         });
 
         editBtn.addEventListener('click', function () {
@@ -45,6 +55,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         deleteBtn.addEventListener('click', function () {
             deleteTask(taskId);
+            taskItem.remove(); // Remove task from the DOM
+            saveTasksToLocalStorage(); // Save tasks to local storage after deletion
         });
     }
 
@@ -67,10 +79,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const titleInput = taskItem.querySelector('.task-title');
         const dueDateInput = taskItem.querySelector('.task-dueDate');
         const prioritySelect = taskItem.querySelector('.task-priority');
+        const categorySelect = taskItem.querySelector('.task-category');
 
         titleInput.disabled = false;
         dueDateInput.disabled = false;
         prioritySelect.disabled = false;
+        categorySelect.disabled = false;
     }
 
     // Delete task
@@ -81,12 +95,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Save tasks to local storage
+    function saveTasksToLocalStorage() {
+        const tasks = taskList.innerHTML;
+        localStorage.setItem('tasks', tasks);
+    }
+
+    // Load tasks from local storage
+    function loadTasks() {
+        const tasks = localStorage.getItem('tasks');
+        if (tasks) {
+            taskList.innerHTML = tasks;
+        }
+    }
+
     // Right-click event listener for deleting task
     document.addEventListener('contextmenu', function (e) {
         e.preventDefault();
         if (e.target.classList.contains('task-card')) {
             const taskId = e.target.dataset.id;
             deleteTask(taskId);
+            saveTasksToLocalStorage(); // Save tasks to local storage after deletion
         }
     });
 });

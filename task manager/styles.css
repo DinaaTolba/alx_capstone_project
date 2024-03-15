@@ -70,12 +70,16 @@ button:hover {
 }
 
 .task-card {
-    background-color: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    position: relative;
+    position: relative; /* Add position relative to handle absolute positioning of delete button */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.task-category {
+    margin-top: 5px;
+    padding: 5px;
 }
 
 .task-card h3 {
@@ -88,60 +92,29 @@ button:hover {
 }
 
 .delete-btn {
-    /* Updated styles */
     position: absolute;
-    top: 140px;
-    right: 50px; /* Adjust as needed to align properly */
+    top: 5px; /* Adjust as needed */
+    right: 5px; /* Adjust as needed */
     background-color: #dc3545;
     color: #fff;
     border: none;
-    border-radius: 5px; /* Match border radius with add task button */
-    padding: 10px 20px; /* Match padding with add task button */
-    font-size: 14px; /* Match font size with add task button */
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
     cursor: pointer;
     transition: transform 0.3s ease;
 }
-
 
 .delete-btn:hover {
     transform: scale(1.1);
 }
 
-
-.trash-icon {
-    width: 20px;
-    height: 20px;
-    fill: #dc3545;
-}
-
-.progress-bar {
-    width: calc(100% - 40px);
-    height: 20px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-top: 20px;
-    position: relative;
-}
-
-.progress {
-    width: 0;
-    height: 100%;
-    background-color: #007bff;
-    transition: width 0.3s ease;
-    position: absolute;
-    top: 0;
-    left: 0;
-    border-radius: 5px;
-}
-
-
 .completed {
-    background-color: #28a745; /* Change background color to green */
+    background-color: #28a745;
 }
 
 .completion-message {
     margin-top: 10px;
-    color: #28a745; /* Change text color to green */
+    color: #28a745;
     font-style: italic;
 }
