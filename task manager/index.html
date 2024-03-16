@@ -10,7 +10,19 @@
     <div class="container">
         <header>
             <h1>Task Manager</h1>
+            <!-- Search input field -->
+            <input type="text" id="searchInput" placeholder="Search tasks...">
         </header>
+        <!-- Filter dropdown -->
+        <div class="filter">
+            <label for="filterPriority">Filter by Priority:</label>
+            <select id="filterPriority">
+                <option value="all">All</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select>
+        </div>
         <div class="task-list" id="taskList">
             <!-- Tasks will be added dynamically here -->
         </div>

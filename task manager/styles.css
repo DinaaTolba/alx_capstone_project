@@ -70,7 +70,7 @@ button:hover {
 }
 
 .task-card {
-    position: relative; /* Add position relative to handle absolute positioning of delete button */
+    position: relative;
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 10px;
@@ -91,10 +91,16 @@ button:hover {
     margin-bottom: 5px;
 }
 
+/* Adjust button positioning */
+.task-card button {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
 .delete-btn {
     position: absolute;
-    top: 5px; /* Adjust as needed */
-    right: 5px; /* Adjust as needed */
+    top: 5px;
+    right: 5px;
     background-color: #dc3545;
     color: #fff;
     border: none;
@@ -103,7 +109,9 @@ button:hover {
     font-size: 14px;
     cursor: pointer;
     transition: transform 0.3s ease;
+    z-index: 1; 
 }
+
 
 .delete-btn:hover {
     transform: scale(1.1);

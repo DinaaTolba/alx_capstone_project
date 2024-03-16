@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     const taskList = document.getElementById('taskList');
-    
+    const searchInput = document.getElementById('searchInput');
+    const filterPriority = document.getElementById('filterPriority');
+
     // Load tasks from local storage on page load
     loadTasks();
 
@@ -9,10 +11,20 @@ document.addEventListener('DOMContentLoaded', function () {
         addTask();
     });
 
+    // Search input event listener
+    searchInput.addEventListener('input', function () {
+        filterTasks();
+    });
+
+    // Filter priority select event listener
+    filterPriority.addEventListener('change', function () {
+        filterTasks();
+    });
+
     // Add task function
     function addTask() {
         const taskItem = document.createElement('div');
-        taskItem.classList.add('task-card');
+        taskItem.classList.add('task-card', 'new-task'); // Add 'new-task' class to distinguish new tasks
 
         const taskId = Date.now();
         taskItem.dataset.id = taskId;
@@ -20,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         taskItem.innerHTML = `
             <input type="text" class="task-title" placeholder="Enter task title" required>
             <input type="date" class="task-dueDate" required>
+            <input type="time" class="task-reminderTime" required>
             <select class="task-priority">
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -34,19 +47,25 @@ document.addEventListener('DOMContentLoaded', function () {
             <button class="complete-btn">Complete</button>
             <button class="edit-btn">Edit</button>
             <button class="delete-btn">Delete</button>
+            <button class="reminder-btn">Set Reminder</button>
+            <button class="save-btn">Save</button>
             <p class="completion-message"></p>
         `;
 
         taskList.appendChild(taskItem);
-        saveTasksToLocalStorage(); // Save tasks to local storage
-        // Add event listeners for task completion, editing, and deletion
+        attachTaskListeners(taskItem);
+    }
+
+    // Attach event listeners for a task
+    function attachTaskListeners(taskItem) {
         const completeBtn = taskItem.querySelector('.complete-btn');
         const editBtn = taskItem.querySelector('.edit-btn');
         const deleteBtn = taskItem.querySelector('.delete-btn');
+        const reminderBtn = taskItem.querySelector('.reminder-btn');
+        const saveBtn = taskItem.querySelector('.save-btn');
 
         completeBtn.addEventListener('click', function () {
             markTaskAsComplete(taskItem);
-            saveTasksToLocalStorage(); // Save tasks to local storage after marking as complete
         });
 
         editBtn.addEventListener('click', function () {
@@ -54,9 +73,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         deleteBtn.addEventListener('click', function () {
-            deleteTask(taskId);
-            taskItem.remove(); // Remove task from the DOM
-            saveTasksToLocalStorage(); // Save tasks to local storage after deletion
+            deleteTask(taskItem);
+            taskItem.remove();
+            saveTasksToLocalStorage();
+        });
+
+        reminderBtn.addEventListener('click', function () {
+            setReminder(taskItem);
+        });
+
+        saveBtn.addEventListener('click', function () {
+            saveTaskData(taskItem);
         });
     }
 
@@ -76,46 +103,144 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Edit task
     function editTask(taskItem) {
-        const titleInput = taskItem.querySelector('.task-title');
-        const dueDateInput = taskItem.querySelector('.task-dueDate');
-        const prioritySelect = taskItem.querySelector('.task-priority');
-        const categorySelect = taskItem.querySelector('.task-category');
-
-        titleInput.disabled = false;
-        dueDateInput.disabled = false;
-        prioritySelect.disabled = false;
-        categorySelect.disabled = false;
+        const inputs = taskItem.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.disabled = !input.disabled;
+        });
     }
 
     // Delete task
-    function deleteTask(taskId) {
-        const taskItem = document.querySelector(`[data-id="${taskId}"]`);
-        if (taskItem) {
-            taskItem.remove();
-        }
+    function deleteTask(taskItem) {
+        const taskId = taskItem.dataset.id;
+        localStorage.removeItem(`task_${taskId}`);
     }
 
-    // Save tasks to local storage
-    function saveTasksToLocalStorage() {
-        const tasks = taskList.innerHTML;
-        localStorage.setItem('tasks', tasks);
+    // Save task data to local storage
+    function saveTaskData(taskItem) {
+        // Delete old version of task if it exists
+        const taskId = taskItem.dataset.id;
+        const existingTask = localStorage.getItem(`task_${taskId}`);
+        if (existingTask) {
+            localStorage.removeItem(`task_${taskId}`);
+        }
+
+        // Save edited task data to local storage
+        const title = taskItem.querySelector('.task-title').value;
+        const dueDate = taskItem.querySelector('.task-dueDate').value;
+        const reminderTime = taskItem.querySelector('.task-reminderTime').value;
+        const priority = taskItem.querySelector('.task-priority').value;
+        const category = taskItem.querySelector('.task-category').value;
+
+        const taskData = {
+            title: title,
+            dueDate: dueDate,
+            reminderTime: reminderTime,
+            priority: priority,
+            category: category
+        };
+
+        localStorage.setItem(`task_${taskId}`, JSON.stringify(taskData));
     }
 
     // Load tasks from local storage
     function loadTasks() {
-        const tasks = localStorage.getItem('tasks');
-        if (tasks) {
-            taskList.innerHTML = tasks;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('task_')) {
+                const taskData = JSON.parse(localStorage.getItem(key));
+                renderTask(taskData);
+            }
         }
     }
 
-    // Right-click event listener for deleting task
-    document.addEventListener('contextmenu', function (e) {
-        e.preventDefault();
-        if (e.target.classList.contains('task-card')) {
-            const taskId = e.target.dataset.id;
-            deleteTask(taskId);
-            saveTasksToLocalStorage(); // Save tasks to local storage after deletion
-        }
-    });
+    // Render task from data
+    function renderTask(taskData) {
+        const taskItem = document.createElement('div');
+        taskItem.classList.add('task-card');
+
+        taskItem.innerHTML = `
+            <input type="text" class="task-title" value="${taskData.title}" disabled required>
+            <input type="date" class="task-dueDate" value="${taskData.dueDate}" disabled required>
+            <input type="time" class="task-reminderTime" value="${taskData.reminderTime}" disabled required>
+            <select class="task-priority" disabled>
+                <option value="low" ${taskData.priority === 'low' ? 'selected' : ''}>Low</option>
+                <option value="medium" ${taskData.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                <option value="high" ${taskData.priority === 'high' ? 'selected' : ''}>High</option>
+            </select>
+            <select class="task-category" disabled>
+                <option value="work" ${taskData.category === 'work' ? 'selected' : ''}>Work</option>
+                <option value="personal" ${taskData.category === 'personal' ? 'selected' : ''}>Personal</option>
+                <option value="shopping" ${taskData.category === 'shopping' ? 'selected' : ''}>Shopping</option>
+                <option value="others" ${taskData.category === 'others' ? 'selected' : ''}>Others</option>
+            </select>
+            <button class="complete-btn">Complete</button>
+            <button class="edit-btn">Edit</button>
+            <button class="delete-btn">Delete</button>
+            <button class="reminder-btn">Set Reminder</button>
+            <button class="save-btn">Save</button>
+            <p class="completion-message"></p>
+        `;
+
+        taskList.appendChild(taskItem);
+        attachTaskListeners(taskItem);
+    }
+
+    // Set reminder for the task
+
+   function setReminder(taskItem) {
+    const title = taskItem.querySelector('.task-title').value;
+    const dueDate = new Date(taskItem.querySelector('.task-dueDate').value);
+    const reminderTime = taskItem.querySelector('.task-reminderTime').value;
+
+    // Convert dueDate and reminderTime to Date objects
+    const dueDateTime = new Date(dueDate.toDateString() + ' ' + reminderTime);
+    const now = new Date();
+
+    // Check if the reminder time is in the past
+    if (dueDateTime < now) {
+        alert('Cannot set a reminder for past date/time.');
+        return;
+    }
+
+    // Calculate the time difference between now and the reminder time
+    const timeDifference = dueDateTime - now;
+
+    // Set up a timeout to display the reminder message at the specified time
+    setTimeout(() => {
+        const notification = document.createElement('div');
+        notification.textContent = `HURRY UP! Task "${title}" is due now!`;
+        notification.style.backgroundColor = '#007bff';
+        notification.style.color = '#fff';
+        notification.style.padding = '10px';
+        notification.style.borderRadius = '5px';
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        document.body.appendChild(notification);
+        
+
+        // Remove the notification after 5 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }, timeDifference);
+}
+
+    // Filter tasks based on search input and selected priority
+    function filterTasks() {
+        const searchText = searchInput.value.toLowerCase();
+        const selectedPriority = filterPriority.value.toLowerCase();
+
+        const tasks = taskList.querySelectorAll('.task-card');
+        tasks.forEach(task => {
+            const title = task.querySelector('.task-title').value.toLowerCase();
+            const priority = task.querySelector('.task-priority').value.toLowerCase();
+            if (title.includes(searchText) && (selectedPriority === 'all' || priority === selectedPriority)) {
+                task.style.display = 'block';
+            } else {
+                task.style.display = 'none';
+            }
+        });
+    }
 });
