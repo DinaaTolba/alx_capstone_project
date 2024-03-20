@@ -126,3 +126,8 @@ button:hover {
     color: #28a745;
     font-style: italic;
 }
+.new-task {
+    border: 2px solid green; /* Example border style */
+    background-color: lightyellow; /* Example background color */
+    /* Add any additional styles as needed */
+}

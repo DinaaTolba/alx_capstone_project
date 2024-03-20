@@ -24,15 +24,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add task function
     function addTask() {
         const taskItem = document.createElement('div');
-        taskItem.classList.add('task-card', 'new-task'); // Add 'new-task' class to distinguish new tasks
-
+        taskItem.classList.add('task-card', 'new-task'); //used for styling the new task
+      
+        //generates a unique identifier for the task using the current timestamp
         const taskId = Date.now();
         taskItem.dataset.id = taskId;
 
         taskItem.innerHTML = `
-            <input type="text" class="task-title" placeholder="Enter task title" required>
-            <input type="date" class="task-dueDate" required>
-            <input type="time" class="task-reminderTime" required>
+            <input type="text" class="task-title" placeholder="Enter task title">
+            <div class="calendar-container">
+                <label for="dueDate">Due Date:</label>
+                <input type="date" id="dueDate" class="task-dueDate">
+            </div>
+            <div class="calendar-container">
+                <label for="reminderDate">Reminder Date & Time:</label>
+                <input type="date" id="reminderDate" class="task-reminderDate">
+                <input type="time" class="task-reminderTime">
+            </div>
             <select class="task-priority">
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -41,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
             <select class="task-category">
                 <option value="work">Work</option>
                 <option value="personal">Personal</option>
-                <option value="shopping">Shopping</option>
                 <option value="others">Others</option>
             </select>
             <button class="complete-btn">Complete</button>
@@ -107,13 +114,17 @@ document.addEventListener('DOMContentLoaded', function () {
         inputs.forEach(input => {
             input.disabled = !input.disabled;
         });
-    }
-
-    // Delete task
+    }  
+    // Delete task removes a task from the task manager application and its associated data from local storage.
     function deleteTask(taskItem) {
         const taskId = taskItem.dataset.id;
+        // Remove task data from local storage
         localStorage.removeItem(`task_${taskId}`);
-    }
+        // Remove task element from the UI
+        
+}
+
+
 
     // Save task data to local storage
     function saveTaskData(taskItem) {
@@ -127,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Save edited task data to local storage
         const title = taskItem.querySelector('.task-title').value;
         const dueDate = taskItem.querySelector('.task-dueDate').value;
+        const reminderDate = taskItem.querySelector('.task-reminderDate').value;
         const reminderTime = taskItem.querySelector('.task-reminderTime').value;
         const priority = taskItem.querySelector('.task-priority').value;
         const category = taskItem.querySelector('.task-category').value;
@@ -134,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const taskData = {
             title: title,
             dueDate: dueDate,
+            reminderDate: reminderDate,
             reminderTime: reminderTime,
             priority: priority,
             category: category
@@ -160,8 +173,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         taskItem.innerHTML = `
             <input type="text" class="task-title" value="${taskData.title}" disabled required>
-            <input type="date" class="task-dueDate" value="${taskData.dueDate}" disabled required>
-            <input type="time" class="task-reminderTime" value="${taskData.reminderTime}" disabled required>
+            <div class="calendar-container">
+                <label for="dueDate">Due Date:</label>
+                <input type="date" id="dueDate" class="task-dueDate" value="${taskData.dueDate}" disabled required>
+            </div>
+            <div class="calendar-container">
+                <label for="reminderDate">Reminder Date & Time:</label>
+                <input type="date" id="reminderDate" class="task-reminderDate" value="${taskData.reminderDate}" disabled required>
+                <input type="time" class="task-reminderTime" value="${taskData.reminderTime}" disabled required>
+            </div>
             <select class="task-priority" disabled>
                 <option value="low" ${taskData.priority === 'low' ? 'selected' : ''}>Low</option>
                 <option value="medium" ${taskData.priority === 'medium' ? 'selected' : ''}>Medium</option>
@@ -186,46 +206,43 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Set reminder for the task
+    function setReminder(taskItem) {
+        const title = taskItem.querySelector('.task-title').value;
+        const reminderDate = new Date(taskItem.querySelector('.task-reminderDate').value);
+        const reminderTime = taskItem.querySelector('.task-reminderTime').value;
 
-   function setReminder(taskItem) {
-    const title = taskItem.querySelector('.task-title').value;
-    const dueDate = new Date(taskItem.querySelector('.task-dueDate').value);
-    const reminderTime = taskItem.querySelector('.task-reminderTime').value;
+        // Set reminder date time
+        const reminderDateTime = new Date(reminderDate.toDateString() + ' ' + reminderTime);
 
-    // Convert dueDate and reminderTime to Date objects
-    const dueDateTime = new Date(dueDate.toDateString() + ' ' + reminderTime);
-    const now = new Date();
+        // Check if the reminder time is in the past
+        if (reminderDateTime < new Date()) {
+            alert('Cannot set a reminder for past date/time.');
+            return;
+        }
 
-    // Check if the reminder time is in the past
-    if (dueDateTime < now) {
-        alert('Cannot set a reminder for past date/time.');
-        return;
-    }
+        // Calculate the time difference between now and the reminder time
+        const timeDifference = reminderDateTime - new Date();
 
-    // Calculate the time difference between now and the reminder time
-    const timeDifference = dueDateTime - now;
-
-    // Set up a timeout to display the reminder message at the specified time
-    setTimeout(() => {
-        const notification = document.createElement('div');
-        notification.textContent = `HURRY UP! Task "${title}" is due now!`;
-        notification.style.backgroundColor = '#007bff';
-        notification.style.color = '#fff';
-        notification.style.padding = '10px';
-        notification.style.borderRadius = '5px';
-        notification.style.position = 'fixed';
-        notification.style.bottom = '20px';
-        notification.style.right = '20px';
-        notification.style.zIndex = '9999';
-        document.body.appendChild(notification);
-        
-
-        // Remove the notification after 5 seconds
+        // Set up a timeout to display the reminder message at the specified time
         setTimeout(() => {
-            notification.remove();
-        }, 5000);
-    }, timeDifference);
-}
+            const notification = document.createElement('div');
+            notification.textContent = `HURRY UP! Task "${title}" Dute date is soon!`;
+            notification.style.backgroundColor = '#007bff';
+            notification.style.color = '#fff';
+            notification.style.padding = '10px';
+            notification.style.borderRadius = '5px';
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            document.body.appendChild(notification);
+
+            // Remove the notification after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }, timeDifference);
+    }
 
     // Filter tasks based on search input and selected priority
     function filterTasks() {
